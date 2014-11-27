@@ -46,7 +46,7 @@ def findPaddle(pixs):
     return x, y
 
 
-def chooseAction(xs, ys, paddleX, paddleY, lastAction, stopped):
+def chooseAction(pxs, pys, xs, ys, paddleX, paddleY, lastAction, stopped):
     action = "0,0\n"
 
     if stopped and (not xs < (paddleX - 6)) and (not xs > (paddleX + 6)):
@@ -87,6 +87,7 @@ def chooseAction(xs, ys, paddleX, paddleY, lastAction, stopped):
     # print "chose action: ", action
     # print "stopped", stopped
     # print 'Ball is in region ' + str(findQuarter(xs, ys))
+    print 'The slope of the ball is ' + str(findSlope(pxs, pys, xs, ys))
     return action, stopped
 
 
@@ -101,6 +102,16 @@ def findQuarter(x, y):
             return 3
         else:
             return 2
+
+
+def findSlope(x1, y1, x2, y2):
+    try:
+        dx = float(x2 - x1)
+        dy = float(y2 - y1)
+        m = dy / dx
+        return m
+    except ZeroDivisionError:
+        return None
 
 
 # create FIFO pipes
@@ -138,6 +149,7 @@ fout.write("1,1\n")
 fout.flush()
 
 # now let's do some moving, first define some useful variables:
+pbx, pby = 0, 0  # Previous ball location
 bx, by = 0, 0  # Ball location
 px, py = 0, 0  # Paddle location
 lastAction = "4,0\n"  # Does not matter
@@ -184,6 +196,7 @@ for i in range(10000):
         # now we have to use this reward to update the network (to somehow update the Q-value of the last (state, action) pair   -- Q=reward+max(Q|a) )
 
     x, y = findBall(img)  # sends the ball coordinates, if ball was not found, sends "0,0"
+    pbx, pby = bx, by  # Storing previous location to calculate slope
 
     pxt, pyt = findPaddle(img)
     if not pxt == 158:  # if the algorithm fails to detect paddle, it gives us the coordinates of the red square on the right (x=158) (which is of the same colour)
@@ -191,7 +204,7 @@ for i in range(10000):
 
     if not (x == 0 and y == 0):  # if ball was found
         bx, by = x, y  # update ball location, (otherwise use the pervious location)
-        a, stopped = chooseAction(bx, by, px, py, lastAction, stopped)
+        a, stopped = chooseAction(pbx, pby, bx, by, px, py, lastAction, stopped)
         lastAction = a
 
     else:
