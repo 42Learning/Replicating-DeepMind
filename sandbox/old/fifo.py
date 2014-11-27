@@ -86,7 +86,21 @@ def chooseAction(xs, ys, paddleX, paddleY, lastAction, stopped):
 
     # print "chose action: ", action
     # print "stopped", stopped
+    # print 'Ball is in region ' + str(findQuarter(xs, ys))
     return action, stopped
+
+
+def findQuarter(x, y):
+    if x >= 80:
+        if y >= 80:
+            return 4
+        else:
+            return 1
+    else:
+        if y >= 80:
+            return 3
+        else:
+            return 2
 
 
 # create FIFO pipes
